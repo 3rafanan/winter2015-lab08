@@ -31,7 +31,8 @@ class Application extends CI_Controller {
      * Render this page
      */
     function render() {
-        $this->data['menubar'] = $this->parser->parse('_menubar', $this->config->item('menu_choices'),true);
+        //$this->data['menubar'] = $this->parser->parse('_menubar', $this->config->item('menu_choices'),true);
+        $this->data['menubar'] = $this->parser->parse('_menubar', $this->makemenu(), true);
         $this->data['content'] = $this->parser->parse($this->data['pagebody'], $this->data, true);
 
         // finally, build the browser page!
@@ -45,17 +46,44 @@ class Application extends CI_Controller {
     function restrict($roleNeeded = null) {
         $userRole = $this->session->userdata('userRole');
         if ($roleNeeded != null) {
-          if (is_array($roleNeeded)) {
-            if (!in_array($userRole, $roleNeeded)) {
-              redirect("/");
-              return;
+            if (is_array($roleNeeded)) {
+                if (!in_array($userRole, $roleNeeded)) {
+                redirect("/");
+                return;
+                }
+            } else if ($userRole != $roleNeeded) {
+                redirect("/");
+                return;
             }
-          } else if ($userRole != $roleNeeded) {
-            redirect("/");
-            return;
-          }
-      }
-}
+        }
+    }
+
+    function makemenu() {
+
+        // create menu bar links based on userRole
+        switch($this->session->userdata('userRole'))
+        {
+            case "admin":
+                $menu = array( 'menudata' => array(
+                    array('name' => "Alpha", 'link' => '/alpha'),
+                    array('name' => "Beta", 'link' => '/beta'),
+                    array('name' => "Gamma", 'link' => '/gamma'),
+                    array('name' => "Logout", 'link' => '/auth/logout'),));
+                break;
+            case "user":
+                $menu = array( 'menudata' => array(
+                    array('name' => "Alpha", 'link' => '/alpha'),
+                    array('name' => "Beta", 'link' => '/beta'),
+                    array('name' => "Logout", 'link' => '/auth/logout'),));
+                break;
+            default:
+                $menu = array( 'menudata' => array(
+                    array('name' => "Alpha", 'link' => '/alpha'),
+                    array('name' => "Login", 'link' => '/auth'),));
+        }
+
+        return $menu;
+    }
 }
 
 /* End of file MY_Controller.php */
